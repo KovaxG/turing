@@ -1,4 +1,4 @@
-𝔟 | None      | Pə,R,Pə,R,P0,R,R,P0,L,L | 𝔬
+𝔟 |           | Pə,R,Pə,R,P0,R,R,P0,L,L | 𝔬
 𝔬 | 1         | R,Px,L,L,L              | 𝔬
 𝔬 | 0         |                         | 𝔮
 𝔮 | Any (0,1) | R,R                     | 𝔮
@@ -8,9 +8,3 @@
 𝔭 | None      | L,L                     | 𝔭
 𝔣 | Any       | R,R                     | 𝔣
 𝔣 | None      | P0,L,L                  | 𝔬
-
-               ℨ
-               
-               
-               
-               
