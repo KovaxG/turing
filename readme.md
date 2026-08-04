@@ -1,6 +1,8 @@
 # Turing interpreter
 
-### 𝔗𝔥𝔢 𝔊𝔬𝔱𝔥𝔦𝔠 𝔄𝔩𝔭𝔥𝔞𝔟𝔢𝔱
+I implemented this interpreter to better understand how Turing machines work. I basing everything on the original paper by Alan Turing called "On Computable Numbers, with an Application to the Entscheidungsproblem" published in 1936.
+
+## 𝔗𝔥𝔢 𝔊𝔬𝔱𝔥𝔦𝔠 𝔄𝔩𝔭𝔥𝔞𝔟𝔢𝔱
 
 It was fashionable to use Gothic letters when Turing's article was written. Some characters might look a bit different from the font used in the article, for example 𝔨 is more similar to 𝔣.
 
