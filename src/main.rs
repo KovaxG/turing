@@ -58,7 +58,7 @@ fn execute_operation(tape: Vec<char>, tape_pos: usize, operation: &Operation) ->
 }
 
 fn main() {
-  let table = read_file("examples/simple.tur").unwrap();
+  let table = read_file("examples/alternating_simplified.tur").unwrap();
   let data = run(table);
   println!("{data:?}");
 }
