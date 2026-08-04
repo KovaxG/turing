@@ -1,4 +1,5 @@
-b None P0,R c
-c None R e
-e None P1,R f
-f None R b
+𝔟 | None  | P0,R | 𝔠
+𝔠 | None  | R    | 𝔢
+𝔢 | None  | P1,R | 𝔨
+𝔨 | None  | R    | 𝔟
+

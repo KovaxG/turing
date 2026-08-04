@@ -2,16 +2,30 @@ use std::{fs, println};
 
 use super::types::{Row, Operation};
 
-pub fn read_file(path: &str) -> Vec<Row> {
+#[derive(Debug)]
+// TODO: can this be a string slice?
+pub struct ParseError(String);
+
+pub fn read_file(path: &str) -> Result<Vec<Row>, ParseError> {
   println!("Reading file: {path}");
-  fs::read_to_string(path).unwrap().lines().map(|l| l.to_string()).map(|l| parse_line(l).unwrap()).collect()
+  let contents = fs::read_to_string(path).map_err(|e| ParseError(format!("IO error: {e}")))?;
+  contents
+    .lines()
+    .map(|l| l.to_string())
+    .filter(|l| !l.is_empty())
+    .filter(|l| !l.starts_with("#"))
+    .map(|l| parse_line(l))
+    .collect()
 }
 
-fn parse_line(line: String) -> Option<Row> {
-  let tokens: Vec<&str> = line.split(' ').collect();
+fn parse_line(line: String) -> Result<Row, ParseError> {
+  let tokens: Vec<&str> = line.split('|').map(|l| l.trim()).collect();
   match tokens[..] {
-    [a, b, c, d] => Some(Row::new(a.to_string(), parse_character(b), parse_commands(c), d.to_string())),
-    _ => None
+    [a, b, c, d] => { 
+      let commands = parse_commands(c);
+      commands.map(|cs| Row::new(a.to_string(), parse_character(b), cs, d.to_string()))
+    }
+    _ => Err(ParseError(format!("Invalid line: '{line}'")))
   }
 }
 
@@ -22,20 +36,20 @@ fn parse_character(character: &str) -> char {
   }
 }
 
-fn parse_commands(commands: &str) -> Vec<Operation> {
-  commands.split(',').map(|c| parse_command(c).unwrap()).collect()
+fn parse_commands(commands: &str) -> Result<Vec<Operation>, ParseError> {
+  commands.split(',').map(|c| parse_command(c)).collect()
 }
 
-fn parse_command(command: &str) -> Option<Operation> {
+fn parse_command(command: &str) -> Result<Operation, ParseError>  {
   match command {
-    "E" => Some(Operation::Erase),
-    "R" => Some(Operation::Right),
-    "L" => Some(Operation::Left),
+    "E" => Ok(Operation::Erase),
+    "R" => Ok(Operation::Right),
+    "L" => Ok(Operation::Left),
     print => {
       if print.starts_with("P") {
-        Some(Operation::Print(print.chars().nth(1).unwrap()))
+        print.chars().nth(1).ok_or(ParseError(format!("Print operation incomplete: {print}"))).map(Operation::Print)
       } else {
-        None
+        Err(ParseError(format!("Invalid operator: {print}")))
       }
     }
   }
