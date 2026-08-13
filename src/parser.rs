@@ -30,11 +30,29 @@ fn parse_line(line: String) -> Result<Row, ParseError> {
 
 fn parse_symbol(symbol: &str) -> SymbolMatcher {
   match symbol {
+    "" => SymbolMatcher::Everything,
     "None" => SymbolMatcher::None,
-    "Any" => SymbolMatcher::Any,
-    other => SymbolMatcher::Char(other.chars().next().unwrap())
-  }
+    text =>
+      if text.starts_with("Any") {
+        if text.contains("(") && text.contains(")") {
+          let characters =
+            text
+              .split("(")
+              .collect::<Vec<&str>>()
+              .get(1)
+              .unwrap()
+              .chars()
+              .filter(|c| *c != ')' && *c != ',')
+              .collect::<Vec<char>>();
 
+          SymbolMatcher::AnyIn(characters)
+        } else {
+          SymbolMatcher::Any
+        }
+      } else {
+        SymbolMatcher::Char(text.chars().next().unwrap())
+      }
+  }
 }
 
 fn parse_commands(commands: &str) -> Result<Vec<Operation>, ParseError> {
@@ -46,6 +64,7 @@ fn parse_command(command: &str) -> Result<Operation, ParseError>  {
     "E" => Ok(Operation::Erase),
     "R" => Ok(Operation::Right),
     "L" => Ok(Operation::Left),
+    "" => Ok(Operation::Noop),
     print => {
       if print.starts_with("P") {
         print

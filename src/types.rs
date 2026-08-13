@@ -3,21 +3,26 @@ pub enum Operation {
   Right,
   Left,
   Erase,
-  Print(char)
+  Print(char),
+  Noop
 }
 
 #[derive(Debug, Clone)]
 pub enum SymbolMatcher {
   Char(char),
+  Everything,
   None,
-  Any
+  Any,
+  AnyIn(Vec<char>)
 }
 
 impl SymbolMatcher {
   pub fn matches(&self, symbol: char) -> bool {
     match self {
+      SymbolMatcher::Everything => true,
       SymbolMatcher::None => symbol == ' ',
       SymbolMatcher::Any => symbol != ' ',
+      SymbolMatcher::AnyIn(list) => list.contains(&symbol),
       SymbolMatcher::Char(c) => symbol == *c
     }
   }

@@ -1,6 +1,6 @@
 use crate::types::{Row, Operation};
 
-const TAPE_LENGTH: usize = 20;
+const TAPE_LENGTH: usize = 50;
 
 pub fn run(m_table: Vec<Row>) -> Vec<char> {
   let mut pos = 0;
@@ -45,6 +45,7 @@ fn execute_operation(tape: Vec<char>, tape_pos: usize, operation: &Operation) ->
     Operation::Erase => execute_operation(tape, tape_pos, &Operation::Print(' ')),
     Operation::Right => (tape, tape_pos + 1),
     Operation::Left => (tape, tape_pos - 1),
+    Operation::Noop => (tape, tape_pos),
     Operation::Print(c) => {
       let mut new_tape = tape.clone();
       new_tape[tape_pos] = *c;
