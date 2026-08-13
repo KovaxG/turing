@@ -1,64 +1,59 @@
 mod parser;
+mod turing;
 mod types;
 
-use types::{Row, Operation};
+use std::{env, println};
+
 use parser::read_file;
 
-const TAPE_LENGTH: usize = 20;
+#[derive(Debug)]
+struct Path(String);
 
-fn run(m_table: Vec<Row>) -> Vec<char> {
-  let mut pos = 0;
-  let mut tape = vec![' '].repeat(TAPE_LENGTH);
-  let mut config = m_table.first().unwrap().m_config.clone();
-  loop {
-    let tape_str: String = tape.iter().collect();
-    let extra_info = format!("c: {config}, i: {pos:2} → ");
-    println!("{extra_info}[{tape_str}]");
+#[derive(Debug)]
+enum Setup {
+  Example(Path),
+  Default(Path)
+}
 
-    let carret_str: String = vec![' '].repeat(pos + extra_info.chars().count() + 1).iter().collect();
-    println!("{carret_str}▲\n");
-
-    let (c, t, p) = run_step(m_table.clone(), tape.clone(), pos, config.clone());
-    config = c;
-    tape = t;
-    pos = p;
-
+fn mk_setup(flags: Vec<&str>, path: &str) -> Setup {
+  if flags.contains(&"-e") {
+    Setup::Example(Path(path.to_string()))
+  } else {
+    Setup::Default(Path(path.to_string()))
   }
 }
 
-// returns the next m_config, the new tape and the position on the tape
-fn run_step(m_table: Vec<Row>, tape: Vec<char>, tape_position: usize, current_m_config: String) -> (String, Vec<char>, usize) {
-  let cur_row =
-    m_table
-      .into_iter()
-      .find(|r| r.m_config == current_m_config && r.symbol == *tape.get(tape_position).unwrap())
-      .expect("Invalid m-config!");
-
-  let (new_tape, new_pos) =
-    cur_row
-      .operations
-      .iter()
-      .fold((tape, tape_position), |(tape, pos), op| execute_operation(tape, pos, op));
-
-  (cur_row.final_m_config, new_tape, new_pos)
-}
-
-// TODO(Gyuri): might be good to check tape bounds
-fn execute_operation(tape: Vec<char>, tape_pos: usize, operation: &Operation) -> (Vec<char>, usize) {
-  match operation {
-    Operation::Erase => execute_operation(tape, tape_pos, &Operation::Print(' ')),
-    Operation::Right => (tape, tape_pos + 1),
-    Operation::Left => (tape, tape_pos - 1),
-    Operation::Print(c) => {
-      let mut new_tape = tape.clone();
-      new_tape[tape_pos] = *c;
-      (new_tape, tape_pos)
+fn run_setup(setup: Setup) {
+  match setup {
+    Setup::Example(Path(example)) => {
+      let actual_path = format!("examples/{example}");
+      let table = read_file(&actual_path).unwrap();
+      let data = turing::run(table);
+      println!("{data:?}")
+    }
+    Setup::Default(Path(path_str)) => {
+      let table = read_file(&path_str).unwrap();
+      let data = turing::run(table);
+      println!("{data:?}")
     }
   }
 }
 
 fn main() {
-  let table = read_file("examples/alternating_simplified.tur").unwrap();
-  let data = run(table);
-  println!("{data:?}");
+  let args: Vec<String> = env::args().skip(1).collect();
+
+  let flags: Vec<&str> = args
+    .iter()
+    .map(String::as_str)
+    .filter(|s| s.starts_with("-"))
+    .collect();
+
+  let path: &str = args
+    .iter()
+    .filter(|s| !s.starts_with("-"))
+    .next()
+    .expect("Please provide a path!");
+
+  let setup = mk_setup(flags, path);
+  run_setup(setup);
 }

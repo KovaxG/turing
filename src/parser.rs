@@ -1,11 +1,12 @@
 use std::{fs, println};
 
-use super::types::{Row, Operation};
+use super::types::{Row, Operation, SymbolMatcher};
 
 #[derive(Debug)]
 pub struct ParseError(String);
 
-pub fn read_file(path: &str) -> Result<Vec<Row>, ParseError> {
+pub fn read_file(path_raw: &str) -> Result<Vec<Row>, ParseError> {
+  let path = fix_path(path_raw);
   println!("Reading file: {path}");
   fs::read_to_string(path)
     .map_err(|e| ParseError(format!("IO error: {e}")))?
@@ -22,16 +23,18 @@ fn parse_line(line: String) -> Result<Row, ParseError> {
   match tokens[..] {
     [a, b, c, d] =>
       parse_commands(c)
-        .map(|cs| Row::new(a.to_string(), parse_character(b), cs, d.to_string())),
+        .map(|cs| Row::new(a.to_string(), parse_symbol(b), cs, d.to_string())),
     _ => Err(ParseError(format!("Invalid line: '{line}'")))
   }
 }
 
-fn parse_character(character: &str) -> char {
-  match character {
-    "None" => ' ',
-    other => other.chars().next().unwrap()
+fn parse_symbol(symbol: &str) -> SymbolMatcher {
+  match symbol {
+    "None" => SymbolMatcher::None,
+    "Any" => SymbolMatcher::Any,
+    other => SymbolMatcher::Char(other.chars().next().unwrap())
   }
+
 }
 
 fn parse_commands(commands: &str) -> Result<Vec<Operation>, ParseError> {
@@ -54,5 +57,13 @@ fn parse_command(command: &str) -> Result<Operation, ParseError>  {
         Err(ParseError(format!("Invalid operator: {print}")))
       }
     }
+  }
+}
+
+fn fix_path(path: &str) -> String {
+  if path.ends_with(".tur") {
+    path.to_string()
+  } else {
+    format!("{path}.tur")
   }
 }
